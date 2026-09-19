@@ -1,0 +1,71 @@
+spring:
+  application:
+    name: claim-management
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:claims}
+    username: ${DB_USER:claims}
+    password: ${DB_PASSWORD:claims}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 20000
+
+  jpa:
+    # validate, never update. Flyway owns the schema.
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+          batch_size: 25
+        order_inserts: true
+        order_updates: true
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+
+server:
+  port: ${SERVER_PORT:9090}
+  error:
+    include-message: always
+  shutdown: graceful
+
+app:
+  jwt:
+    # Override in every real environment. Must be >= 32 bytes for HS256.
+    secret: ${JWT_SECRET:change-me-in-production-this-is-a-demo-secret-key-32b}
+    issuer: claim-management
+    ttl-minutes: ${JWT_TTL_MINUTES:480}
+  cors:
+    # Empty in Docker: nginx proxies /api so the browser sees one origin.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+
+logging:
+  level:
+    root: INFO
+    com.claire.claims: DEBUG
+    org.hibernate.SQL: INFO
