@@ -1,0 +1,16 @@
+# Java
+target/
+*.class
+
+# Node
+node_modules/
+dist/
+
+# Env
+.env
+
+# IDE
+.idea/
+.vscode/
+*.iml
+.DS_Store
