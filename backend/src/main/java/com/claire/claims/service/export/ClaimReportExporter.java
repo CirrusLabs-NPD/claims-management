@@ -65,13 +65,16 @@ public class ClaimReportExporter {
     }
 
     /**
-     * Download filename for the report, e.g. {@code claims-report-Q1-2025.csv}
-     * or {@code claims-report-FY2024.pdf}. The period label is normalised to a
-     * filename-safe token (spaces to dashes).
+     * Download filename for the report, e.g. {@code claims-report-2025-Q1.csv}
+     * for a quarter or {@code claims-report-2024.pdf} for a full year. The period
+     * is stamped year-first so downloaded files sort chronologically in a folder.
      */
     public String filename(ClaimReport report, ExportFormat format) {
-        String label = report.period().label().trim().replaceAll("\\s+", "-");
-        return "claims-report-" + label + "." + format.extension();
+        Integer quarter = report.period().quarter();
+        String stamp = quarter == null
+                ? String.valueOf(report.period().year())
+                : report.period().year() + "-Q" + quarter;
+        return "claims-report-" + stamp + "." + format.extension();
     }
 
     // ----- CSV ------------------------------------------------------------

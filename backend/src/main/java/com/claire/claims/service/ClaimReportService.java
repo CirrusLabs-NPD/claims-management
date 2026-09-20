@@ -52,7 +52,7 @@ public class ClaimReportService {
         ReportPeriod period = ReportPeriods.resolve(type, year, quarter);
         ReportSummary summary = summaryFor(period);
         List<ClaimListItem> detail = detailFor(period);
-        return new ClaimReport(period, summary, detail);
+        return new ClaimReport(period, period.year(), period.quarter(), summary, detail);
     }
 
     // ---------------------------------------------------------------------

@@ -212,13 +212,13 @@ class ClaimReportExportE2ETest {
     void filenamesEncodeTheQuarterAndTheYear() {
         seedQ1_2025();
         ClaimReport quarter = reports.build(ReportPeriodType.QUARTER, 2025, 1);
-        assertThat(exporter.filename(quarter, ExportFormat.CSV)).isEqualTo("claims-report-Q1-2025.csv");
-        assertThat(exporter.filename(quarter, ExportFormat.XLSX)).isEqualTo("claims-report-Q1-2025.xlsx");
-        assertThat(exporter.filename(quarter, ExportFormat.PDF)).isEqualTo("claims-report-Q1-2025.pdf");
+        assertThat(exporter.filename(quarter, ExportFormat.CSV)).isEqualTo("claims-report-2025-Q1.csv");
+        assertThat(exporter.filename(quarter, ExportFormat.XLSX)).isEqualTo("claims-report-2025-Q1.xlsx");
+        assertThat(exporter.filename(quarter, ExportFormat.PDF)).isEqualTo("claims-report-2025-Q1.pdf");
 
         ClaimReport annual = reports.build(ReportPeriodType.YEAR, 2025, null);
-        assertThat(exporter.filename(annual, ExportFormat.CSV)).isEqualTo("claims-report-FY2025.csv");
-        assertThat(exporter.filename(annual, ExportFormat.PDF)).isEqualTo("claims-report-FY2025.pdf");
+        assertThat(exporter.filename(annual, ExportFormat.CSV)).isEqualTo("claims-report-2025.csv");
+        assertThat(exporter.filename(annual, ExportFormat.PDF)).isEqualTo("claims-report-2025.pdf");
     }
 
     // ------------------------------------------------------------------

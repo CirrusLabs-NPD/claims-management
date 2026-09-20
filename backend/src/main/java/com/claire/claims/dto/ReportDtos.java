@@ -50,9 +50,15 @@ public final class ReportDtos {
     /**
      * The full report: the period it covers, the summary rollup, and the
      * underlying claim detail rows (same flat shape as the claims list).
+     *
+     * {@code year} and {@code quarter} are surfaced at the top level (in
+     * addition to {@link ReportPeriod}) so a client can read the selection back
+     * without unpacking the period; {@code quarter} is null for a YEAR report.
      */
     public record ClaimReport(
             ReportPeriod period,
+            int year,
+            Integer quarter,
             ReportSummary summary,
             List<ClaimListItem> detail) { }
 }

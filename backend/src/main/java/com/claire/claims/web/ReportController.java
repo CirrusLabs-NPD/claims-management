@@ -1,5 +1,6 @@
 package com.claire.claims.web;
 
+import com.claire.claims.common.ApiExceptions.BusinessRuleException;
 import com.claire.claims.dto.ReportDtos.ClaimReport;
 import com.claire.claims.dto.ReportDtos.ReportPeriodType;
 import com.claire.claims.service.ClaimReportService;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Locale;
 
 /**
  * Claims reporting. Distinct from the Phase 2 {@code /api/analytics/*} surface:
@@ -37,56 +40,50 @@ public class ReportController {
     /**
      * Claims report for a quarter or a full year.
      *
+     * <p>{@code format=json} (the default) returns
+     * {@code { period, year, quarter, summary, detail[] }}. {@code format=csv|xlsx|pdf}
+     * streams the same report as a downloadable file with a
+     * {@code Content-Disposition: attachment} header and a period-stamped filename.
+     * Any other {@code format} value is rejected with 400 problem+json.
+     *
      * @param period  QUARTER or YEAR (required)
      * @param year    four-digit calendar year (required)
      * @param quarter 1-4, required when {@code period=QUARTER}, rejected when {@code period=YEAR}
+     * @param format  json (default) | csv | xlsx | pdf
      */
     @GetMapping("/claims")
-    public ClaimReport claims(@RequestParam ReportPeriodType period,
-                              @RequestParam Integer year,
-                              @RequestParam(required = false) Integer quarter) {
-        return reports.build(period, year, quarter);
-    }
-
-    /** The same report as {@link #claims}, streamed as a CSV download. */
-    @GetMapping("/claims/export.csv")
-    public ResponseEntity<byte[]> exportCsv(@RequestParam ReportPeriodType period,
-                                            @RequestParam Integer year,
-                                            @RequestParam(required = false) Integer quarter) {
-        return export(period, year, quarter, ExportFormat.CSV);
-    }
-
-    /** The same report, streamed as an Excel (.xlsx) download. */
-    @GetMapping("/claims/export.xlsx")
-    public ResponseEntity<byte[]> exportXlsx(@RequestParam ReportPeriodType period,
-                                             @RequestParam Integer year,
-                                             @RequestParam(required = false) Integer quarter) {
-        return export(period, year, quarter, ExportFormat.XLSX);
-    }
-
-    /** The same report, streamed as a PDF download. */
-    @GetMapping("/claims/export.pdf")
-    public ResponseEntity<byte[]> exportPdf(@RequestParam ReportPeriodType period,
-                                            @RequestParam Integer year,
-                                            @RequestParam(required = false) Integer quarter) {
-        return export(period, year, quarter, ExportFormat.PDF);
-    }
-
-    /**
-     * Builds the report through the same tenancy/period-scoped path the JSON
-     * endpoint uses, serialises it in {@code format}, and returns it as an
-     * attachment with the correct content type and a period-stamped filename.
-     */
-    private ResponseEntity<byte[]> export(ReportPeriodType period, Integer year,
-                                          Integer quarter, ExportFormat format) {
+    public ResponseEntity<?> claims(@RequestParam ReportPeriodType period,
+                                    @RequestParam Integer year,
+                                    @RequestParam(required = false) Integer quarter,
+                                    @RequestParam(required = false, defaultValue = "json") String format) {
         ClaimReport report = reports.build(period, year, quarter);
-        byte[] body = exporter.export(report, format);
-        String filename = exporter.filename(report, format);
+
+        if (format.equalsIgnoreCase("json")) {
+            return ResponseEntity.ok(report);
+        }
+
+        ExportFormat exportFormat = parseFormat(format);
+        byte[] body = exporter.export(report, exportFormat);
+        String filename = exporter.filename(report, exportFormat);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.parseMediaType(format.contentType()));
+        headers.setContentType(MediaType.parseMediaType(exportFormat.contentType()));
         headers.setContentDisposition(
                 ContentDisposition.attachment().filename(filename).build());
         return ResponseEntity.ok().headers(headers).body(body);
+    }
+
+    /**
+     * Maps a {@code format} query value to an {@link ExportFormat}, rejecting an
+     * unknown one with a 400 problem+json rather than letting it fall through to
+     * a 500 or a wrong content type.
+     */
+    private static ExportFormat parseFormat(String format) {
+        try {
+            return ExportFormat.valueOf(format.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new BusinessRuleException(
+                    "format must be one of json, csv, xlsx, pdf (got '" + format + "')");
+        }
     }
 }

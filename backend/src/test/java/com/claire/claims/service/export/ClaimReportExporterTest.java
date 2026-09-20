@@ -66,26 +66,26 @@ class ClaimReportExporterTest {
                         new BigDecimal("250.50"), new BigDecimal("0.00"), new BigDecimal("250.50"),
                         null, OffsetDateTime.parse("2025-02-01T08:00:00Z")));
 
-        return new ClaimReport(period, summary, detail);
+        return new ClaimReport(period, 2025, 1, summary, detail);
     }
 
     @Test
     void filenameIncludesThePeriodLabelAndExtension() {
         ClaimReport report = sampleReport();
-        assertThat(exporter.filename(report, ExportFormat.CSV)).isEqualTo("claims-report-Q1-2025.csv");
-        assertThat(exporter.filename(report, ExportFormat.XLSX)).isEqualTo("claims-report-Q1-2025.xlsx");
-        assertThat(exporter.filename(report, ExportFormat.PDF)).isEqualTo("claims-report-Q1-2025.pdf");
+        assertThat(exporter.filename(report, ExportFormat.CSV)).isEqualTo("claims-report-2025-Q1.csv");
+        assertThat(exporter.filename(report, ExportFormat.XLSX)).isEqualTo("claims-report-2025-Q1.xlsx");
+        assertThat(exporter.filename(report, ExportFormat.PDF)).isEqualTo("claims-report-2025-Q1.pdf");
     }
 
     @Test
     void annualFilenameUsesTheFiscalYearLabel() {
         ReportPeriod period = new ReportPeriod(ReportPeriodType.YEAR, 2024, null,
                 LocalDate.of(2024, 1, 1), LocalDate.of(2024, 12, 31), "FY2024");
-        ClaimReport report = new ClaimReport(period,
+        ClaimReport report = new ClaimReport(period, 2024, null,
                 new ReportSummary(0, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO,
                         List.of(), List.of()),
                 List.of());
-        assertThat(exporter.filename(report, ExportFormat.PDF)).isEqualTo("claims-report-FY2024.pdf");
+        assertThat(exporter.filename(report, ExportFormat.PDF)).isEqualTo("claims-report-2024.pdf");
     }
 
     @Test
