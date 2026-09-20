@@ -65,9 +65,9 @@ export default function ReportsPage() {
   const runExport = async (format: ExportFormat) => {
     setExporting(format);
     setExportError(null);
-    const stamp = period === 'QUARTER' ? `Q${quarter}-${year}` : `FY${year}`;
+    const stamp = period === 'QUARTER' ? `${year}-Q${quarter}` : `${year}`;
     try {
-      await downloadExport(`/reports/claims/export.${format}`, query, `claims-report-${stamp}.${format}`);
+      await downloadExport('/reports/claims', { ...query, format }, `claims-report-${stamp}.${format}`);
     } catch (err) {
       setExportError(err instanceof ApiError ? err.detail : `Could not export the ${format.toUpperCase()} report.`);
     } finally {
