@@ -1,0 +1,183 @@
+/* =====================================================================
+   Reports — design tokens & component styles (S-6)
+   ---------------------------------------------------------------------
+   Direction: "Calm clinical ledger" — the existing claims-management
+   system, documented and extended. This file is ADDITIVE to styles.css:
+   it adds (1) the motion + focus tokens the base sheet never named,
+   (2) a designed dark theme (base sheet is light-only), and
+   (3) the Reports-page component states (export buttons, skeleton).
+   Every value here maps to, or extends, a styles.css :root token.
+   Load AFTER styles.css. See frontend/DESIGN.md.
+   ===================================================================== */
+
+:root {
+  /* --- Motion (new: base sheet has none) --------------------------- */
+  --motion-fast:   120ms;
+  --motion-base:   180ms;                 /* hover / press */
+  --motion-enter:  220ms;                 /* panels, menus opening */
+  --ease-out:      cubic-bezier(.2, .8, .25, 1);
+
+  /* --- Focus ring (new: standardises the 3px accent-soft ring) ----- */
+  --focus-ring:    0 0 0 3px var(--accent-soft);
+
+  /* --- Elevation, named (base sheet exposes --shadow/--shadow-lg) --- */
+  --elev-0: none;
+  --elev-1: var(--shadow);
+  --elev-2: var(--shadow-lg);
+
+  /* --- Type scale, named (values already used across the app) ------ */
+  --fs-caption: 11px;   /* uppercase labels, badges */
+  --fs-small:   12px;   /* field labels, notes */
+  --fs-body:    14px;   /* base */
+  --fs-h2:      16px;   /* card / section titles */
+  --fs-h1:      20px;   /* page title */
+  --fs-stat:    24px;   /* stat card values */
+
+  /* --- Spacing scale, named (4px base; matches existing paddings) -- */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
+  --space-4: 16px; --space-6: 24px; --space-8: 32px; --space-12: 48px;
+}
+
+/* =====================================================================
+   Dark theme — DESIGNED values, not an inversion.
+   Applied via <html data-theme="dark"> or the OS preference.
+   Depth comes from lighter surfaces; borders lift, shadows soften.
+   ===================================================================== */
+:root[data-theme="dark"] {
+  --bg:            #0b1017;
+  --surface:       #131b26;
+  --surface-2:     #1b2531;
+  --border:        #26313f;
+  --border-strong: #35424f;
+
+  --text:          #e7ecf3;
+  --text-muted:    #9aa7b8;
+  --text-faint:    #6f7d90;
+
+  --accent:        #5b8cff;   /* lifted for contrast on dark surface */
+  --accent-hover:  #7aa1ff;
+  --accent-soft:   #16233d;
+
+  --ok:            #4cc79a;  --ok-soft:      #10261f;
+  --warn:          #e0a94a;  --warn-soft:    #2a2110;
+  --danger:        #f0776f;  --danger-soft:  #2b1515;
+  --neutral:       #9aa7b8;  --neutral-soft: #1e2733;
+  --info:          #6fa2e0;  --info-soft:    #14243a;
+
+  --shadow:    0 1px 2px rgba(0,0,0,.4), 0 1px 3px rgba(0,0,0,.4);
+  --shadow-lg: 0 10px 34px rgba(0,0,0,.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#0b1017; --surface:#131b26; --surface-2:#1b2531;
+    --border:#26313f; --border-strong:#35424f;
+    --text:#e7ecf3; --text-muted:#9aa7b8; --text-faint:#6f7d90;
+    --accent:#5b8cff; --accent-hover:#7aa1ff; --accent-soft:#16233d;
+    --ok:#4cc79a; --ok-soft:#10261f; --warn:#e0a94a; --warn-soft:#2a2110;
+    --danger:#f0776f; --danger-soft:#2b1515; --neutral:#9aa7b8;
+    --neutral-soft:#1e2733; --info:#6fa2e0; --info-soft:#14243a;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 1px 3px rgba(0,0,0,.4);
+    --shadow-lg:0 10px 34px rgba(0,0,0,.55);
+  }
+}
+
+/* =====================================================================
+   Motion & focus applied to shared controls
+   ===================================================================== */
+.btn, input, select, textarea, tbody tr.clickable {
+  transition: background-color var(--motion-base) var(--ease-out),
+              border-color var(--motion-base) var(--ease-out),
+              box-shadow var(--motion-base) var(--ease-out),
+              color var(--motion-base) var(--ease-out);
+}
+
+/* Standardised keyboard focus — designed, visible, accent ring. */
+.btn:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+/* =====================================================================
+   Reports — period picker
+   The picker reuses .filters + .field + native <select>; this only
+   pins the control heights to the 36px set.
+   ===================================================================== */
+.reports-picker .field select { height: 36px; }
+
+/* Period summary caption sitting inline with the picker */
+.reports-period-note {
+  font-size: var(--fs-small);
+  color: var(--text-muted);
+}
+.reports-period-note strong { color: var(--text); font-weight: 600; }
+
+/* =====================================================================
+   Reports — export button group
+   Buttons reuse .btn.btn-secondary.btn-sm; these rules add the
+   loading + disabled states the group needs during a download.
+   ===================================================================== */
+.reports-export { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+
+.reports-export .btn { min-width: 108px; }
+
+/* Loading: aria-busy toggled while the blob downloads. */
+.reports-export .btn[aria-busy="true"] {
+  color: var(--text-muted);
+  cursor: progress;
+  pointer-events: none;
+}
+.reports-export .btn[aria-busy="true"]::before {
+  content: "";
+  width: 12px; height: 12px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: reports-spin var(--motion-enter) linear infinite;
+}
+@keyframes reports-spin { to { transform: rotate(360deg); } }
+
+/* When one export is running, the siblings read as disabled. */
+.reports-export .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* =====================================================================
+   Reports — loading skeleton (final layout, not a spinner in a void)
+   ===================================================================== */
+.skeleton {
+  background: linear-gradient(90deg,
+      var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%);
+  background-size: 400% 100%;
+  animation: skeleton-shimmer 1.4s var(--ease-out) infinite;
+  border-radius: var(--radius-s);
+}
+@keyframes skeleton-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+.skeleton-stat  { height: 68px; }
+.skeleton-line  { height: 12px; margin: 6px 0; }
+.skeleton-row   { height: 40px; margin: 1px 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton, .reports-export .btn[aria-busy="true"]::before { animation: none; }
+}
+
+/* =====================================================================
+   Reports — spacing helpers used by the page
+   ===================================================================== */
+.mt-16 { margin-top: var(--space-4); }
+.mt-24 { margin-top: var(--space-6); }
+.muted { color: var(--text-muted); }
+.faint { color: var(--text-faint); }
