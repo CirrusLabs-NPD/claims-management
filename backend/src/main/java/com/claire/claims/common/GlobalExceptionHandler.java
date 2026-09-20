@@ -13,8 +13,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -58,6 +60,26 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)
                 .header("X-Phase", "2")
                 .body(body.getBody());
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ProblemDetail> handleMissingParam(MissingServletRequestParameterException ex,
+                                                            HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Missing request parameter",
+                     "Required parameter '" + ex.getParameterName() + "' is missing.",
+                     "missing-parameter", req, null);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ProblemDetail> handleTypeMismatch(MethodArgumentTypeMismatchException ex,
+                                                            HttpServletRequest req) {
+        Class<?> required = ex.getRequiredType();
+        String expected = required == null ? "the expected type"
+                : (required.isEnum() ? "one of " + java.util.Arrays.toString(required.getEnumConstants())
+                                     : required.getSimpleName());
+        return build(HttpStatus.BAD_REQUEST, "Invalid request parameter",
+                     "Parameter '" + ex.getName() + "' must be " + expected + ".",
+                     "type-mismatch", req, null);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
