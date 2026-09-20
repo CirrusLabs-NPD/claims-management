@@ -20,6 +20,8 @@
   <properties>
     <java.version>21</java.version>
     <springdoc.version>3.1.1</springdoc.version>
+    <poi.version>5.5.1</poi.version>
+    <openpdf.version>3.0.5</openpdf.version>
   </properties>
 
   <dependencies>
@@ -86,6 +88,21 @@
       <version>${springdoc.version}</version>
     </dependency>
 
+    <!-- Report export. Excel (.xlsx) via Apache POI; PDF via OpenPDF (LGPL/MPL,
+         package org.openpdf.text in 3.x). CSV is written by hand, so it needs no
+         dependency. Versions are pinned here because the Spring Boot parent does
+         not manage them. -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>${poi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>${openpdf.version}</version>
+    </dependency>
+
     <!-- Test -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -95,6 +112,13 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <!-- In-memory database for @DataJpaTest slices, run in PostgreSQL
+         compatibility mode. Test scope only: Postgres stays the runtime driver. -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
