@@ -101,3 +101,55 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
 function safeParse(text: string): Record<string, unknown> | null {
   try { return JSON.parse(text) as Record<string, unknown>; } catch { return null; }
 }
+
+/**
+ * Downloads a file (CSV, xlsx, PDF) from an authenticated endpoint. Mirrors the
+ * `api` wrapper — bearer token, query builder, RFC 9457 problem+json unwrapped
+ * into an ApiError, sign-out on 401 — but keeps the body as a blob and saves it
+ * with the filename the server sets in Content-Disposition.
+ */
+export async function download(path: string, options: Options = {}): Promise<void> {
+  const token = tokenStore.get();
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const response = await fetch(`/api${path}${buildQuery(options.query)}`, {
+    method: options.method ?? 'GET',
+    headers,
+  });
+
+  if (response.status === 401) {
+    tokenStore.clear();
+    window.location.hash = '#/login';
+    throw new ApiError(401, 'Your session has expired. Sign in again.');
+  }
+
+  if (!response.ok) {
+    const text = await response.text();
+    const payload = text ? safeParse(text) : null;
+    const detail =
+      (payload?.detail as string) ??
+      (payload?.message as string) ??
+      `Download failed with status ${response.status}`;
+    throw new ApiError(response.status, detail, (payload?.errors as Record<string, string>) ?? {});
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filenameFromDisposition(response.headers.get('Content-Disposition'));
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+/** Pulls the filename out of a Content-Disposition header; falls back if absent. */
+function filenameFromDisposition(header: string | null): string {
+  if (!header) return 'download';
+  const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(header);
+  if (utf8) return decodeURIComponent(utf8[1]);
+  const quoted = /filename="?([^";]+)"?/i.exec(header);
+  return quoted ? quoted[1] : 'download';
+}

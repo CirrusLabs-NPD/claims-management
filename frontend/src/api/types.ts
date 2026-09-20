@@ -128,6 +128,39 @@ export interface ClaimSummary {
   byStatus: StatusBucket[];
 }
 
+export type ReportPeriodType = 'QUARTER' | 'YEAR';
+
+export interface ReportPeriod {
+  type: ReportPeriodType;
+  year: number;
+  quarter: number | null;
+  from: string;
+  to: string;
+  label: string;
+}
+
+export interface TypeBucket {
+  code: string;
+  count: number;
+  totalCharge: number;
+  paidAmount: number;
+}
+
+export interface ReportSummary {
+  totalClaims: number;
+  totalCharged: number;
+  totalPaid: number;
+  outstandingReceivable: number;
+  byStatus: StatusBucket[];
+  byType: TypeBucket[];
+}
+
+export interface ClaimReport {
+  period: ReportPeriod;
+  summary: ReportSummary;
+  detail: ClaimListItem[];
+}
+
 export interface PatientSummary {
   id: number;
   mrn: string;
