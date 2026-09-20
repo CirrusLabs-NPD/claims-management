@@ -97,6 +97,13 @@
       <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- In-memory database for @DataJpaTest slices, run in PostgreSQL
+         compatibility mode. Test scope only: Postgres stays the runtime driver. -->
+    <dependency>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
