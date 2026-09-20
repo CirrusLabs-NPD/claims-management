@@ -20,6 +20,8 @@
   <properties>
     <java.version>21</java.version>
     <springdoc.version>3.1.1</springdoc.version>
+    <poi.version>5.5.1</poi.version>
+    <openpdf.version>3.0.5</openpdf.version>
   </properties>
 
   <dependencies>
@@ -84,6 +86,21 @@
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
       <version>${springdoc.version}</version>
+    </dependency>
+
+    <!-- Report export. Excel (.xlsx) via Apache POI; PDF via OpenPDF (LGPL/MPL,
+         package org.openpdf.text in 3.x). CSV is written by hand, so it needs no
+         dependency. Versions are pinned here because the Spring Boot parent does
+         not manage them. -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi-ooxml</artifactId>
+      <version>${poi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>${openpdf.version}</version>
     </dependency>
 
     <!-- Test -->
