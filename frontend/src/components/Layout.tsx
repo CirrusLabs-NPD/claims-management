@@ -28,6 +28,8 @@ export function Layout() {
           <NavLink to="/claims">All claims</NavLink>
           <NavLink to="/claims/new">New claim</NavLink>
 
+          <NavLink to="/reports">Reports</NavLink>
+
           <div className="nav-label">Reference data</div>
           <NavLink to="/patients">Patients</NavLink>
           <NavLink to="/payers">Payers</NavLink>

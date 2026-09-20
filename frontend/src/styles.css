@@ -36,6 +36,72 @@
   --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
 }
 
+/* Dark theme — designed, not inverted: darker neutral surfaces, lifted
+   accent, and tinted soft colours re-toned so body text keeps >= 4.5:1
+   contrast. Applied by OS preference and by an explicit [data-theme="dark"]
+   override so a future toggle can force it. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:            #0e1420;
+    --surface:       #161d2b;
+    --surface-2:     #1e2636;
+    --border:        #2a3342;
+    --border-strong: #3a4557;
+
+    --text:          #e7ecf3;
+    --text-muted:    #a6b2c4;
+    --text-faint:    #8090a3;
+
+    --accent:        #5b95f2;
+    --accent-hover:  #79a9f5;
+    --accent-soft:   #1b2c48;
+
+    --ok:            #5fd3aa;
+    --ok-soft:       #12332a;
+    --warn:          #e6b563;
+    --warn-soft:     #3a2d12;
+    --danger:        #f08a8a;
+    --danger-soft:   #3a1c1c;
+    --neutral:       #b3bccb;
+    --neutral-soft:  #242c3a;
+    --info:          #7db0f0;
+    --info-soft:     #16273f;
+
+    --shadow:    0 1px 2px rgba(0, 0, 0, .35), 0 1px 3px rgba(0, 0, 0, .35);
+    --shadow-lg: 0 8px 28px rgba(0, 0, 0, .55);
+  }
+}
+
+[data-theme="dark"] {
+  --bg:            #0e1420;
+  --surface:       #161d2b;
+  --surface-2:     #1e2636;
+  --border:        #2a3342;
+  --border-strong: #3a4557;
+
+  --text:          #e7ecf3;
+  --text-muted:    #a6b2c4;
+  --text-faint:    #8090a3;
+
+  --accent:        #5b95f2;
+  --accent-hover:  #79a9f5;
+  --accent-soft:   #1b2c48;
+
+  --ok:            #5fd3aa;
+  --ok-soft:       #12332a;
+  --warn:          #e6b563;
+  --warn-soft:     #3a2d12;
+  --danger:        #f08a8a;
+  --danger-soft:   #3a1c1c;
+  --neutral:       #b3bccb;
+  --neutral-soft:  #242c3a;
+  --info:          #7db0f0;
+  --info-soft:     #16273f;
+
+  --shadow:    0 1px 2px rgba(0, 0, 0, .35), 0 1px 3px rgba(0, 0, 0, .35);
+  --shadow-lg: 0 8px 28px rgba(0, 0, 0, .55);
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root { height: 100%; }
@@ -232,7 +298,7 @@ textarea { resize: vertical; min-height: 68px; }
   background: var(--surface-2); border: 1px solid var(--border);
   font-size: 11px; color: var(--text-muted);
 }
-.pill-phase2 { background: var(--warn-soft); border-color: #f0d8a8; color: var(--warn); }
+.pill-phase2 { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 32%, transparent); color: var(--warn); }
 
 /* =====================================================================
    Filters, pagination, misc
@@ -257,10 +323,10 @@ textarea { resize: vertical; min-height: 68px; }
   padding: 10px 13px; border-radius: var(--radius-s);
   font-size: 13px; margin-bottom: 14px; border: 1px solid transparent;
 }
-.alert-error { background: var(--danger-soft); border-color: #f3c9c9; color: #7f1717; }
-.alert-info  { background: var(--info-soft);   border-color: #c6dbf4; color: #1d4373; }
-.alert-warn  { background: var(--warn-soft);   border-color: #f0d8a8; color: #6d470a; }
-.alert-ok    { background: var(--ok-soft);     border-color: #b9e4d5; color: #0d5c46; }
+.alert-error { background: var(--danger-soft); border-color: color-mix(in srgb, var(--danger) 32%, transparent); color: var(--danger); }
+.alert-info  { background: var(--info-soft);   border-color: color-mix(in srgb, var(--info) 32%, transparent);   color: var(--info); }
+.alert-warn  { background: var(--warn-soft);   border-color: color-mix(in srgb, var(--warn) 32%, transparent);   color: var(--warn); }
+.alert-ok    { background: var(--ok-soft);     border-color: color-mix(in srgb, var(--ok) 32%, transparent);     color: var(--ok); }
 
 .timeline { list-style: none; margin: 0; padding: 0; }
 .timeline li {
@@ -332,3 +398,70 @@ textarea { resize: vertical; min-height: 68px; }
 .mt-16 { margin-top: 16px; }
 .mt-24 { margin-top: 24px; }
 .flex-between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+/* =====================================================================
+   Responsive — phone / narrow tablet (<= 768px)
+   Collapse the flex shell: the fixed-width sidebar becomes a full-width
+   top bar with a horizontally scrolling nav, and the main column takes the
+   full width so content is readable at 390px instead of being pushed off
+   screen. Wide tables scroll inside their own card rather than the page.
+   ===================================================================== */
+@media (max-width: 768px) {
+  .app { flex-direction: column; }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 4px;
+    padding: 10px 12px;
+  }
+  .brand {
+    padding: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+    flex: 1 1 auto;
+  }
+  .nav {
+    flex: 1 1 100%;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 0;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Section labels are redundant in the horizontal strip. */
+  .nav-label { display: none; }
+  .nav a { padding: 7px 12px; white-space: nowrap; }
+  .sidebar-footer {
+    border-top: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+  }
+  .sidebar-footer strong { display: inline; }
+  .sidebar-footer span { display: none; }
+  .sidebar-footer div { margin-top: 0 !important; }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+  }
+  .content { padding: 16px 16px 40px; }
+
+  /* Filters stack full width so selects and buttons don't clip. */
+  .filters .field { min-width: 0; flex: 1 1 100%; }
+
+  /* Wide tables scroll within their card instead of overflowing the page. */
+  .card-body.tight { overflow-x: auto; }
+  .card-body.tight table { min-width: 640px; }
+  /* Detail table sits directly in a card (no tight body) — scroll it too. */
+  .card > table { display: block; overflow-x: auto; }
+  .card > table thead, .card > table tbody { display: table; width: 100%; min-width: 640px; }
+}
