@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Test-only persistence unit for the report aggregation slice
+  (ClaimReportServiceTest). It bootstraps a real JPA layer over H2 in
+  PostgreSQL-compatibility mode so the actual @Query aggregation SQL and the
+  real ClaimRepository run without the full Spring context or a live Postgres.
+  Connection properties are supplied programmatically by the test.
+  Production runs on Postgres + Flyway and does not use this unit.
+-->
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+                 https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+  <persistence-unit name="reportslice" transaction-type="RESOURCE_LOCAL">
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <!-- The entity classes live in the main module's output root, not this
+         test-classes root, so they are listed explicitly rather than scanned. -->
+    <class>com.claire.claims.domain.AppUser</class>
+    <class>com.claire.claims.domain.Claim</class>
+    <class>com.claire.claims.domain.ClaimDiagnosis</class>
+    <class>com.claire.claims.domain.ClaimLine</class>
+    <class>com.claire.claims.domain.ClaimStatusHistory</class>
+    <class>com.claire.claims.domain.InsurancePolicy</class>
+    <class>com.claire.claims.domain.Patient</class>
+    <class>com.claire.claims.domain.Payer</class>
+    <class>com.claire.claims.domain.Provider</class>
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <properties>
+      <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+      <property name="hibernate.show_sql" value="false"/>
+    </properties>
+  </persistence-unit>
+</persistence>
