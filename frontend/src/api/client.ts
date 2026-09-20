@@ -103,20 +103,21 @@ function safeParse(text: string): Record<string, unknown> | null {
 }
 
 /**
- * Downloads a file (CSV, xlsx, PDF) from an authenticated endpoint. Mirrors the
- * `api` wrapper — bearer token, query builder, RFC 9457 problem+json unwrapped
- * into an ApiError, sign-out on 401 — but keeps the body as a blob and saves it
- * with the filename the server sets in Content-Disposition.
+ * Downloads a binary export (CSV/Excel/PDF) with the bearer token attached and
+ * saves it to disk. A plain <a href> cannot carry the Authorization header, so
+ * we fetch the bytes, honour the server's Content-Disposition filename, and
+ * surface failures as the same typed ApiError the JSON path uses.
  */
-export async function download(path: string, options: Options = {}): Promise<void> {
+export async function downloadExport(
+  path: string,
+  query: Options['query'],
+  fallbackName: string,
+): Promise<void> {
   const token = tokenStore.get();
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const response = await fetch(`/api${path}${buildQuery(options.query)}`, {
-    method: options.method ?? 'GET',
-    headers,
-  });
+  const response = await fetch(`/api${path}${buildQuery(query)}`, { headers });
 
   if (response.status === 401) {
     tokenStore.clear();
@@ -130,26 +131,27 @@ export async function download(path: string, options: Options = {}): Promise<voi
     const detail =
       (payload?.detail as string) ??
       (payload?.message as string) ??
-      `Download failed with status ${response.status}`;
-    throw new ApiError(response.status, detail, (payload?.errors as Record<string, string>) ?? {});
+      `Export failed with status ${response.status}`;
+    throw new ApiError(response.status, detail);
   }
 
   const blob = await response.blob();
+  const filename = filenameFromDisposition(response.headers.get('Content-Disposition')) ?? fallbackName;
+
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filenameFromDisposition(response.headers.get('Content-Disposition'));
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
   URL.revokeObjectURL(url);
 }
 
-/** Pulls the filename out of a Content-Disposition header; falls back if absent. */
-function filenameFromDisposition(header: string | null): string {
-  if (!header) return 'download';
+function filenameFromDisposition(header: string | null): string | null {
+  if (!header) return null;
   const utf8 = /filename\*=UTF-8''([^;]+)/i.exec(header);
-  if (utf8) return decodeURIComponent(utf8[1]);
-  const quoted = /filename="?([^";]+)"?/i.exec(header);
-  return quoted ? quoted[1] : 'download';
+  if (utf8) { try { return decodeURIComponent(utf8[1]); } catch { /* fall through */ } }
+  const plain = /filename="?([^";]+)"?/i.exec(header);
+  return plain ? plain[1] : null;
 }
